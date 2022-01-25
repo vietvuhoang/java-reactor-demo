@@ -22,7 +22,7 @@ public class HelloFluxAndMonoTest {
 
         Flux.just(1, 2, 3)
                 .delayElements(Duration.ofMillis(500))
-                .map( value -> String.format("To String Value [%d]", value))
+                .map(value -> String.format("To String Value [%d]", value))
                 .subscribe(subscriber);
 
         future.get();
@@ -40,7 +40,7 @@ public class HelloFluxAndMonoTest {
 
         Mono.just(123)
                 .delayElement(Duration.ofMillis(500))
-                .map( value -> String.format("To String Value [%d]", value))
+                .map(value -> String.format("To String Value [%d]", value))
                 .subscribe(subscriber);
 
         future.get();

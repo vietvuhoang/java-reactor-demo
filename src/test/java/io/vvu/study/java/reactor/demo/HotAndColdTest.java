@@ -2,15 +2,14 @@ package io.vvu.study.java.reactor.demo;
 
 import io.vvu.study.java.reactor.demo.reactor.MySubscriber;
 import io.vvu.study.java.reactor.demo.tools.Fold;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Sinks;
 
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CompletableFuture;
@@ -26,7 +25,7 @@ public class HotAndColdTest {
         Logger logger = LogManager.getLogger("ColdPublisher");
 
         // Create a Cold Stream
-        Flux<String> fluxColdStream = Flux.defer( () -> {
+        Flux<String> fluxColdStream = Flux.defer(() -> {
             logger.info("START");
             return Flux.just("This", "is", "a", "COLD", "Publisher");
         });
@@ -91,7 +90,7 @@ public class HotAndColdTest {
         }).map(Object::toString).delayElements(Duration.ofMillis(wait));
 
         flux.subscribe(firstSubscriber);
-        Thread.sleep(Float.valueOf(wait * 2.5f).longValue() );
+        Thread.sleep(Float.valueOf(wait * 2.5f).longValue());
         flux.subscribe(secondSubscriber);
 
         CompletableFuture.allOf(firstFuture, secondFuture).get();
@@ -164,7 +163,7 @@ public class HotAndColdTest {
 
             timer.schedule(task, 1000, 1000);
 
-        }).log().as( fx -> new Fold<>( fx, 0L, Long::sum).toMono()).log("My Fold").map(Object::toString).subscribe(subscriber);
+        }).log().as(fx -> new Fold<>(fx, 0L, Long::sum).toMono()).log("My Fold").map(Object::toString).subscribe(subscriber);
 
         future.get();
 

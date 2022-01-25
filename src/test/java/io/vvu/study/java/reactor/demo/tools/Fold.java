@@ -6,26 +6,29 @@ import org.reactivestreams.Subscription;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoSink;
+
 import java.util.Objects;
 import java.util.function.BiFunction;
 
-public class Fold<T,R> implements Processor<T, R> {
+public class Fold<T, R> implements Processor<T, R> {
 
     private final Mono<R> mono;
-    private final BiFunction<R,T, R> func;
+    private final BiFunction<R, T, R> func;
     private MonoSink<R> emitter;
     private R accumulator;
     private Subscription subscription;
 
-    public Fold(Flux<T> flux, R accumulator, BiFunction<R,T, R> func) {
+    public Fold(Flux<T> flux, R accumulator, BiFunction<R, T, R> func) {
         this.func = Objects.requireNonNull(func);
 
         this.accumulator = accumulator;
-        mono = Mono.create( (MonoSink<R> emitter) -> { this.emitter = emitter; });
+        mono = Mono.create((MonoSink<R> emitter) -> {
+            this.emitter = emitter;
+        });
         Objects.requireNonNull(flux).subscribe(this);
     }
 
-    public Fold(Flux<T> flux, BiFunction<R,T, R> func) {
+    public Fold(Flux<T> flux, BiFunction<R, T, R> func) {
         this(flux, null, func);
     }
 
@@ -42,7 +45,7 @@ public class Fold<T,R> implements Processor<T, R> {
 
     @Override
     public void onNext(T t) {
-        this.accumulator = this.func.apply( this.accumulator, t);
+        this.accumulator = this.func.apply(this.accumulator, t);
         subscription.request(1);
     }
 

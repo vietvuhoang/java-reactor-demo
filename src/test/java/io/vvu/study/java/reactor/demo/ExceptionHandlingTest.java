@@ -15,14 +15,14 @@ class ExceptionHandlingTest {
     @Test
     void testWhenNoExceptionHandler() throws ExecutionException, InterruptedException {
 
-        Assertions.assertThrows( ExecutionException.class, () -> {
+        Assertions.assertThrows(ExecutionException.class, () -> {
             CompletableFuture<String> future = new CompletableFuture<>();
 
             MySubscriber<String> sSubscriber = new MySubscriber<String>("ExceptionHandler")
                     .onDone(future::complete)
                     .onFailure(future::completeExceptionally);
 
-            Flux.just("ZX", "--", "SS","KK", "FF")
+            Flux.just("ZX", "--", "SS", "KK", "FF")
                     .map(s -> {
                         if (s.equals("--")) throw new IllegalArgumentException(s);
                         if (s.equals("KK")) throw new IllegalStateException(s);
@@ -46,7 +46,7 @@ class ExceptionHandlingTest {
                 .onDone(future::complete)
                 .onFailure(future::completeExceptionally);
 
-        Flux.just("ZX", "--", "SS","KK", "FF")
+        Flux.just("ZX", "--", "SS", "KK", "FF")
                 .map(s -> {
                     if (s.equals("--")) throw new IllegalArgumentException(s);
                     if (s.equals("KK")) throw new IllegalStateException(s);
