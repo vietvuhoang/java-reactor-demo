@@ -35,26 +35,36 @@ public class ThreadingAndSchedulesTest {
     }
 
     @Test
-    void testPublishOnWithSchedule() {
+    void testPublishOnWithSchedule() throws ExecutionException, InterruptedException {
 
         CompletableFuture<String> future = new CompletableFuture<>();
         Flux<String> flux = Flux.just("Hello", "Reactor", "Threading");
         Logger log = LogManager.getLogger("TestOnPublisher");
 
-        MySubscriber<String> sSubscriber = new MySubscriber<String>("testOnPublisherWithSchedule")
+        MySubscriber<String> sSubscriber =
+            new MySubscriber<String>("testOnPublisherWithSchedule")
                 .onDone(future::complete)
                 .onFailure(future::completeExceptionally);
 
-        flux.publishOn(Schedulers.newSingle("First"))
+        flux
+            // Execute on Main
+            .doOnNext(log::info)
+
+            // Switch Execution Context to FirstScheduler
+            .publishOn(Schedulers.newSingle("FirstScheduler"))
                 .doOnNext(log::info)
                 .map(v -> String.format("[%s]", v))
-                .publishOn(Schedulers.newSingle("Second"))
+
+            // Switch Execution Context to SecondScheduler
+            .publishOn(Schedulers.newParallel("SecondScheduler"))
                 .doOnNext(log::info)
                 .subscribe(sSubscriber);
+
+        future.get();
     }
 
     @Test
-    void testSubscribeOnWithSchedule() {
+    void testSubscribeOnWithSchedule() throws ExecutionException, InterruptedException {
 
         CompletableFuture<String> future = new CompletableFuture<>();
         Flux<String> flux = Flux.just("Hello", "Reactor", "Threading");
@@ -65,11 +75,18 @@ public class ThreadingAndSchedulesTest {
                 .onFailure(future::completeExceptionally);
 
         flux
-                .doOnNext(log::info)
-                .publishOn(Schedulers.newSingle("PublishOn"))
-                .map(v -> String.format("[%s]", v))
-                .doOnNext(log::info)
-                .subscribeOn(Schedulers.newParallel("SubscribeOn"))
-                .subscribe(sSubscriber);
+                // Source Emission Execution Context
+                .doOnNext(log::info) // run on SubscribeOnScheduler
+
+                // Switch Execution Context to PublishOnScheduler
+                .publishOn(Schedulers.newSingle("PublishOnScheduler"))
+                    .map(v -> String.format("[%s]", v)) // Run on PublishOnScheduler
+                    .doOnNext(log::info) // Run on PublishOnScheduler
+
+                // Update Execution Context of Source Emission
+                .subscribeOn(Schedulers.newParallel("SubscribeOnScheduler", 4))
+                    .subscribe(sSubscriber);
+
+        future.get();
     }
 }
