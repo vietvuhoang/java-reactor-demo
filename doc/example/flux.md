@@ -9,7 +9,7 @@
         CompletableFuture<String> future = new CompletableFuture<>();
 
         MySubscriber<String> subscriber = new MySubscriber<String>("TEST-1")
-                .onDone(future::complete)
+                .onDone(future::complete)a
                 .onFailure(future::completeExceptionally);
 
         Flux.just(1, 2, 3)
